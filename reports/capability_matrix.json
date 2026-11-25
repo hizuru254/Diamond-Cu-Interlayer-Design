@@ -1,0 +1,82 @@
+{
+  "C  diamond": {
+    "a0": 3.59,
+    "e0": -9.0907,
+    "dev": 0.65,
+    "convex": true,
+    "inside": true,
+    "verdict": "USABLE"
+  },
+  "Cu fcc": {
+    "a0": 3.6656,
+    "e0": -3.7267,
+    "dev": 1.4,
+    "convex": true,
+    "inside": true,
+    "verdict": "USABLE"
+  },
+  "Ti hcp": {
+    "a0": 2.9438,
+    "e0": -7.9344,
+    "dev": -0.24,
+    "convex": true,
+    "inside": true,
+    "verdict": "USABLE"
+  },
+  "Cr bcc": {
+    "a0": 2.8648,
+    "e0": -9.6825,
+    "dev": -0.67,
+    "convex": true,
+    "inside": true,
+    "verdict": "USABLE"
+  },
+  "Mo bcc": {
+    "a0": 3.1856,
+    "e0": -10.9562,
+    "dev": 1.23,
+    "convex": true,
+    "inside": true,
+    "verdict": "USABLE"
+  },
+  "W  bcc": {
+    "a0": 3.2051,
+    "e0": -13.0135,
+    "dev": 1.27,
+    "convex": true,
+    "inside": true,
+    "verdict": "USABLE"
+  },
+  "TiC rocksalt": {
+    "a0": 4.3572,
+    "e0": -9.404,
+    "dev": 0.68,
+    "convex": true,
+    "inside": true,
+    "verdict": "USABLE"
+  },
+  "CrC rocksalt": {
+    "a0": 3.8699,
+    "e0": -8.4349,
+    "dev": -6.3,
+    "convex": true,
+    "inside": true,
+    "verdict": "POOR"
+  },
+  "MoC rocksalt": {
+    "a0": 4.7639,
+    "e0": -8.4171,
+    "dev": 11.31,
+    "convex": true,
+    "inside": false,
+    "verdict": "EDGE (min outside scan)"
+  },
+  "WC hex": {
+    "a0": 2.9089,
+    "e0": -7.0096,
+    "dev": 0.1,
+    "convex": false,
+    "inside": true,
+    "verdict": "NO MINIMUM"
+  }
+}
