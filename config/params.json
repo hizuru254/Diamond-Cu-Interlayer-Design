@@ -23,7 +23,7 @@
     "n_warm_steps": 80000,
     "n_prod_steps": 150000,
     "thermo_every": 100,
-    "chunk_bin_A": 2.0,
+    "chunk_bin_A": 1.0,
     "ave_nevery": 10,
     "ave_nrepeat": 100,
     "ave_nfreq": 1000

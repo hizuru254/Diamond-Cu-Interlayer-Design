@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "status": "APPROVED",
+  "approved_by": "agent",
+  "approved_at": "2026-11-26",
+  "files": {
+    "potentials.in": {
+      "sha256": "87e32cf599a358c1b36d1f9540ff120b61bc1891c36d09f935ee0ddc5b1ef520"
+    },
+    "CuTiC_NEP.txt": {
+      "sha256": "39b8c52ac46b5923f762f935f790922b482f4bce7462fdd52c76bf811452fbef"
+    }
+  },
+  "bulk_validation": {
+    "verdict": "PASS",
+    "note": "C 3.590, Cu 3.666, Ti 2.944, Cr 2.865, Mo 3.186, W 3.205, TiC 4.357, WC 2.960 (all within 1.9%)"
+  }
+}
