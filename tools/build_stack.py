@@ -84,7 +84,7 @@ def main() -> int:
 
     # --- interlayer (TiC) ------------------------------------------------
     gap = 2.10
-    d_i = a_i/(2.0*np.sqrt(3.0))
+    d_i = A_TIC/(2.0*np.sqrt(3.0))   # rocksalt (111): a0/(2 sqrt3), NOT the in-plane NN
     nz_i = max(2, int(round(t_nm*10.0/d_i)))
     pts_i, tps_i = [], []
     for k in range(nz_i):
