@@ -13,6 +13,6 @@
   },
   "bulk_validation": {
     "verdict": "PASS",
-    "note": "C 3.590, Cu 3.666, Ti 2.944, Cr 2.865, Mo 3.186, W 3.205, TiC 4.357, WC 2.960 (all within 1.9%)"
+    "note": "8 phases within 1.9%"
   }
 }

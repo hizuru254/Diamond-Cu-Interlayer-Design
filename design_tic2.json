@@ -1,2 +1,2 @@
-{"interlayer": "TiC", "thickness_nm": 2.0, "termination": "Ti",
- "cu_thickness_nm": 40, "diamond_thickness_nm": 30, "vacuum_nm": 1.5}
+{"interlayer": "TiC", "thickness_A": 20.0, "termination": "Ti", "termination_cu": "Ti",
+ "cu_thickness_A": 50.0, "diamond_thickness_A": 50.0, "vacuum_A": 12.0}

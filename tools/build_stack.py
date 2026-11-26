@@ -52,11 +52,22 @@ def main() -> int:
     a = ap.parse_args()
     spec = json.loads(Path(a.design).read_text(encoding="utf-8"))
     mat = spec.get("interlayer", "TiC")
-    t_nm = float(spec.get("thickness_nm", 2.0))
+    def get_A(key, default_nm):
+        """Thickness in Angstrom. Accepts key_A (preferred) or key_nm (x10)."""
+        if key + "_A" in spec:
+            return float(spec[key + "_A"])
+        if key + "_nm" in spec:
+            return float(spec[key + "_nm"]) * 10.0
+        return default_nm * 10.0
+
+    t_nm = get_A("thickness", 2.0) / 10.0      # interlayer thickness in nm (legacy var name)
     term = spec.get("termination", "Ti")
-    cu_nm = float(spec.get("cu_thickness_nm", 40.0))
-    dia_nm = float(spec.get("diamond_thickness_nm", 30.0))
-    vac = float(spec.get("vacuum_nm", 1.5))
+    term_cu = spec.get("termination_cu", None)
+    cu_nm = get_A("cu_thickness", 60.0) / 10.0
+    dia_nm = get_A("diamond_thickness", 60.0) / 10.0
+    vac = get_A("vacuum", 1.5) / 10.0
+    print(f"[spec] interlayer {t_nm*10:.1f} A, diamond {dia_nm*10:.1f} A, "
+          f"Cu {cu_nm*10:.1f} A, vacuum {vac*10:.1f} A")
     if mat != "TiC":
         raise SystemExit(f"{mat}: bulk phase not validated yet; only TiC enabled")
 
@@ -70,7 +81,7 @@ def main() -> int:
     # --- diamond (bottom) ----------------------------------------------
     dz_d = A_DIA/np.sqrt(3.0)          # 2.059 A between (111) planes
     sub = 1.545                         # C-C bond along [111]
-    nz_d = int(round(dia_nm/dz_d))
+    nz_d = int(round(dia_nm*10.0/dz_d))
     pts_d, tps_d = [], []
     for k in range(nz_d):
         s = k % 3
@@ -86,6 +97,15 @@ def main() -> int:
     gap = 2.10
     d_i = A_TIC/(2.0*np.sqrt(3.0))   # rocksalt (111): a0/(2 sqrt3), NOT the in-plane NN
     nz_i = max(2, int(round(t_nm*10.0/d_i)))
+    if term_cu is not None:
+        # planes alternate term, other, term, ...; odd nz ends with `term`
+        want_odd = (term_cu == term)
+        if want_odd and nz_i % 2 == 0:
+            nz_i += 1
+        elif (not want_odd) and nz_i % 2 == 1:
+            nz_i += 1
+        print(f"[spec] interlayer planes {nz_i} -> bottom {term}-term, "
+              f"top {(term if nz_i % 2 else ('C' if term=='Ti' else 'Ti'))}-term")
     pts_i, tps_i = [], []
     for k in range(nz_i):
         s = k % 3
@@ -100,7 +120,7 @@ def main() -> int:
 
     # --- Cu (top) ---------------------------------------------------------
     dz_c = A_CU0/np.sqrt(3.0)
-    nz_c = int(round(cu_nm/dz_c))
+    nz_c = int(round(cu_nm*10.0/dz_c))
     pts_c, tps_c = [], []
     for k in range(nz_c):
         s = k % 3
