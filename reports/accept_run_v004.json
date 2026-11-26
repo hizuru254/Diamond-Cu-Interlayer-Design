@@ -1,0 +1,16 @@
+{
+  "run": "run_v004",
+  "criteria": {
+    "structure": false,
+    "profile": true,
+    "consistency": false,
+    "stationarity": false,
+    "stability": true
+  },
+  "R_stack": 6.6649e-09,
+  "R_piecewise": 2.728e-09,
+  "r2": 0.9529,
+  "half_to_half": 25.3,
+  "dpe_dt": 0.0045,
+  "verdict": "REJECT"
+}

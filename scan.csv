@@ -3,3 +3,5 @@ TIC2,pair,0,0,0,2,0,single,pending,TiC 2nm Ti-terminated (fixed spacing)
 TIC2_LOW,pair,0,0,0,2,0,single,pending,TiC 2nm at 0.3 eV/ps (linearity check)
 TIC2_GENTLE,pair,0,0,0,2,0,single,pending,gentle 450K anneal
 TIC40,pair,0,0,0,40,0,single,pending,TiC 40A 450K anneal
+TIC60,pair,0,0,0,60,0,single,pending,TiC 60A 450K anneal
+TIC40_ISO,pair,0,0,0,40,0,single,pending,TiC 40A isothermal 300K
