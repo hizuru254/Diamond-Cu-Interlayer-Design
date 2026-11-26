@@ -2,3 +2,4 @@ scan_id,kind,W_nm,D_nm,P_nm,t_nm,phi_deg,sided,status,note
 TIC2,pair,0,0,0,2,0,single,pending,TiC 2nm Ti-terminated (fixed spacing)
 TIC2_LOW,pair,0,0,0,2,0,single,pending,TiC 2nm at 0.3 eV/ps (linearity check)
 TIC2_GENTLE,pair,0,0,0,2,0,single,pending,gentle 450K anneal
+TIC40,pair,0,0,0,40,0,single,pending,TiC 40A 450K anneal

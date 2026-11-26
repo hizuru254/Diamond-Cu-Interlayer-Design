@@ -49,6 +49,8 @@ def main() -> int:
     ap.add_argument("--design", required=True)
     ap.add_argument("--out-structure", required=True)
     ap.add_argument("--out-geom", required=True)
+    ap.add_argument("--shift1", default="0,0", help="lateral shift of interlayer vs diamond (A)")
+    ap.add_argument("--shift2", default="0,0", help="lateral shift of Cu vs interlayer (A)")
     a = ap.parse_args()
     spec = json.loads(Path(a.design).read_text(encoding="utf-8"))
     mat = spec.get("interlayer", "TiC")
@@ -76,6 +78,8 @@ def main() -> int:
     for name, aa, ref in (("diamond", a_d, NN["C"]), ("Cu", a_c, NN["Cu"]), ("TiC", a_i, NN["TiC"])):
         print(f"[strain] {name:8s} a={aa:.3f} vs bulk {ref:.3f}  {100*(aa-ref)/ref:+.2f}%")
 
+    s1 = [float(x) for x in a.shift1.split(",")]
+    s2 = [float(x) for x in a.shift2.split(",")]
     parts, types = [], []
 
     # --- diamond (bottom) ----------------------------------------------
@@ -115,6 +119,8 @@ def main() -> int:
         pts_i.append(np.hstack([p, np.full((len(p), 1), gap + k*d_i)]))
         tps_i.append(np.full(len(p), TYPE[el]))
     lay = np.vstack(pts_i)
+    lay[:, 0] = (lay[:, 0] + s1[0]) % L
+    lay[:, 1] = (lay[:, 1] + s1[1]) % LY
     parts.append(lay); types.append(np.concatenate(tps_i))
     z_top = lay[:, 2].max()
 
@@ -129,6 +135,8 @@ def main() -> int:
         pts_c.append(np.hstack([p, np.full((len(p), 1), z_top + 2.10 + k*dz_c)]))
         tps_c.append(np.full(len(p), TYPE["Cu"]))
     cu = np.vstack(pts_c)
+    cu[:, 0] = (cu[:, 0] + s1[0] + s2[0]) % L
+    cu[:, 1] = (cu[:, 1] + s1[1] + s2[1]) % LY
     parts.append(cu); types.append(np.concatenate(tps_c))
 
     atoms = np.vstack(parts); tps = np.concatenate(types)
