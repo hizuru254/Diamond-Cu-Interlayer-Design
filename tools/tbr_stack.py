@@ -52,9 +52,13 @@ def main() -> int:
     sd = run/a.seed
     geom = geomlib.load_json(run/"geom.json")
     zs = [float(i["z"]) for i in geom["interfaces"]]
-    if len(zs) != 2:
-        print(f"[SKIP] needs exactly two interfaces, found {len(zs)}"); return 1
-    z1, z2 = sorted(zs)
+    if len(zs) == 1:
+        z1 = z2 = zs[0]
+        print("[info] single interface: measuring T(z1-15) - T(z1+15)")
+    elif len(zs) == 2:
+        z1, z2 = sorted(zs)
+    else:
+        print(f"[SKIP] unsupported interface count {len(zs)}"); return 1
     q = q_of(run)
     blocks = parse_blocks(sd/"profile.txt")
 

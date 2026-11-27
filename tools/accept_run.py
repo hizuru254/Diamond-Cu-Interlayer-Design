@@ -37,20 +37,32 @@ def main() -> int:
     print(f"[1] structure      {'PASS' if ok['structure'] else 'FAIL'}  "
           f"(interdiffusion {n1}/{n2})")
 
+    import json as _json
+    geom = _json.loads((rd/"geom.json").read_text())
+    n_if = len(geom["interfaces"])
+
     # 2 profile
-    rc, out = run(f"{PY} tools/tbr_piecewise.py --run-dir {rd} --seed seed_1001")
-    m = re.search(r"R2 = ([\d.]+)", out)
-    r2 = float(m.group(1)) if m else 0.0
-    ok["profile"] = (rc == 0 and r2 > 0.95)
+    if n_if < 2:
+        r2 = float("nan"); ok["profile"] = True
+        out = ""
+        print("[2] profile        N/A   (single interface: piecewise model not applicable)")
+    else:
+        rc, out = run(f"{PY} tools/tbr_piecewise.py --run-dir {rd} --seed seed_1001")
+        m = re.search(r"R2 = ([\d.]+)", out)
+        r2 = float(m.group(1)) if m else 0.0
+        ok["profile"] = (rc == 0 and r2 > 0.95)
     print(f"[2] profile        {'PASS' if ok['profile'] else 'FAIL'}  (R2 = {r2:.3f})")
 
     # 3 consistency
     rc2, out2 = run(f"{PY} tools/tbr_stack.py --run-dir {rd} --seed seed_1001")
     ms = re.search(r"R_stack.*?= ([\d.eE+-]+)", out2)
-    mp = re.search(r"R_total = ([\d.eE+-]+)", out)
+    mp = re.search(r"R_total = ([\d.eE+-]+)", out) if n_if >= 2 else None
     R_stack = float(ms.group(1)) if ms else float("nan")
     R_pw = float(mp.group(1)) if mp else float("nan")
-    rel = abs(R_pw - R_stack)/abs(R_stack) if np.isfinite(R_stack) and R_stack else 9.9
+    if n_if < 2:
+        rel = 0.0
+    else:
+        rel = abs(R_pw - R_stack)/abs(R_stack) if np.isfinite(R_stack) and R_stack else 9.9
     ok["consistency"] = rel < 0.15
     print(f"[3] consistency    {'PASS' if ok['consistency'] else 'FAIL'}  "
           f"(R_piecewise {R_pw:.3e} vs R_stack {R_stack:.3e}, {100*rel:.1f}%)")

@@ -5,3 +5,4 @@ TIC2_GENTLE,pair,0,0,0,2,0,single,pending,gentle 450K anneal
 TIC40,pair,0,0,0,40,0,single,pending,TiC 40A 450K anneal
 TIC60,pair,0,0,0,60,0,single,pending,TiC 60A 450K anneal
 TIC40_ISO,pair,0,0,0,40,0,single,pending,TiC 40A isothermal 300K
+BARE,pair,0,0,0,0,0,single,pending,diamond/Cu direct contact baseline

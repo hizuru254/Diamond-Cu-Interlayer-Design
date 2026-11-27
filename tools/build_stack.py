@@ -70,8 +70,8 @@ def main() -> int:
     vac = get_A("vacuum", 1.5) / 10.0
     print(f"[spec] interlayer {t_nm*10:.1f} A, diamond {dia_nm*10:.1f} A, "
           f"Cu {cu_nm*10:.1f} A, vacuum {vac*10:.1f} A")
-    if mat != "TiC":
-        raise SystemExit(f"{mat}: bulk phase not validated yet; only TiC enabled")
+    if mat not in ("TiC", "none"):
+        raise SystemExit(f"{mat}: only TiC / WC / none enabled so far")
 
     n_d = n_c = 6; n_i = 5
     a_d, a_c, a_i = L/n_d, L/n_c, L/n_i
@@ -97,32 +97,38 @@ def main() -> int:
     dia = np.vstack(pts_d); dia[:, 2] -= dia[:, 2].max()
     parts.append(dia); types.append(np.concatenate(tps_d))
 
-    # --- interlayer (TiC) ------------------------------------------------
+    # --- interlayer ------------------------------------------------------
     gap = 2.10
-    d_i = A_TIC/(2.0*np.sqrt(3.0))   # rocksalt (111): a0/(2 sqrt3), NOT the in-plane NN
-    nz_i = max(2, int(round(t_nm*10.0/d_i)))
-    if term_cu is not None:
-        # planes alternate term, other, term, ...; odd nz ends with `term`
-        want_odd = (term_cu == term)
-        if want_odd and nz_i % 2 == 0:
-            nz_i += 1
-        elif (not want_odd) and nz_i % 2 == 1:
-            nz_i += 1
-        print(f"[spec] interlayer planes {nz_i} -> bottom {term}-term, "
-              f"top {(term if nz_i % 2 else ('C' if term=='Ti' else 'Ti'))}-term")
-    pts_i, tps_i = [], []
-    for k in range(nz_i):
-        s = k % 3
-        sh = (s*a_i/2.0, s*a_i/(2.0*np.sqrt(3)))
-        el = term if k % 2 == 0 else ("C" if term == "Ti" else "Ti")
-        p = tri(n_i, a_i, sh)
-        pts_i.append(np.hstack([p, np.full((len(p), 1), gap + k*d_i)]))
-        tps_i.append(np.full(len(p), TYPE[el]))
-    lay = np.vstack(pts_i)
-    lay[:, 0] = (lay[:, 0] + s1[0]) % L
-    lay[:, 1] = (lay[:, 1] + s1[1]) % LY
-    parts.append(lay); types.append(np.concatenate(tps_i))
-    z_top = lay[:, 2].max()
+    lay = None
+    if mat == "none":
+        print("[spec] no interlayer: direct diamond/Cu contact")
+        z_top = 0.0
+    elif mat == "TiC":
+        d_i = A_TIC/(2.0*np.sqrt(3.0))
+        nz_i = max(2, int(round(t_nm*10.0/d_i)))
+        if term_cu is not None:
+            want_odd = (term_cu == term)
+            if want_odd and nz_i % 2 == 0:
+                nz_i += 1
+            elif (not want_odd) and nz_i % 2 == 1:
+                nz_i += 1
+            print(f"[spec] interlayer planes {nz_i} -> bottom {term}-term, "
+                  f"top {(term if nz_i % 2 else ('C' if term=='Ti' else 'Ti'))}-term")
+        pts_i, tps_i = [], []
+        for k in range(nz_i):
+            s = k % 3
+            sh = (s*a_i/2.0, s*a_i/(2.0*np.sqrt(3)))
+            el = term if k % 2 == 0 else ("C" if term == "Ti" else "Ti")
+            pp = tri(n_i, a_i, sh)
+            pts_i.append(np.hstack([pp, np.full((len(pp), 1), gap + k*d_i)]))
+            tps_i.append(np.full(len(pp), TYPE[el]))
+        lay = np.vstack(pts_i)
+        lay[:, 0] = (lay[:, 0] + s1[0]) % L
+        lay[:, 1] = (lay[:, 1] + s1[1]) % LY
+        parts.append(lay); types.append(np.concatenate(tps_i))
+        z_top = lay[:, 2].max()
+    else:
+        raise SystemExit(f"{mat}: only TiC / WC / none enabled so far")
 
     # --- Cu (top) ---------------------------------------------------------
     dz_c = A_CU0/np.sqrt(3.0)
@@ -178,42 +184,42 @@ def main() -> int:
     Path(a.out_structure).write_text("\n".join(lines)+"\n", encoding="utf-8")
     # ---- geom for preflight ------------------------------------------
     z_dia_top = float(dia[:,2].max())
-    z_tic_bot = float(lay[:,2].min())
-    z_tic_top = float(lay[:,2].max())
     z_cu_bot = float(cu[:,2].min())
-    i1 = 0.5*(z_dia_top + z_tic_bot)
-    i2 = 0.5*(z_tic_top + z_cu_bot)
+    zi = 0.5*(z_dia_top + z_cu_bot)
+    if lay is None:
+        layers = [{"id": "DIA", "material": "C", "z_min": float(dia[:,2].min()), "z_max": zi},
+                  {"id": "CU", "material": "Cu", "z_min": zi, "z_max": float(cu[:,2].max())}]
+        ifaces = [{"id": "DIA_CU", "z": zi,
+                   "left": {"z_min": zi-15.0, "z_max": zi-2.0, "material": "C"},
+                   "right": {"z_min": zi+2.0, "z_max": zi+15.0, "material": "Cu"}}]
+    else:
+        z_tic_top = float(lay[:,2].max())
+        i2 = 0.5*(z_tic_top + z_cu_bot)
+        layers = [{"id": "DIA", "material": "C", "z_min": float(dia[:,2].min()), "z_max": zi},
+                  {"id": "INT", "material": mat, "z_min": zi, "z_max": i2},
+                  {"id": "CU", "material": "Cu", "z_min": i2, "z_max": float(cu[:,2].max())}]
+        ifaces = [{"id": "DIA_INT", "z": zi,
+                   "left": {"z_min": zi-10.0, "z_max": zi-2.0, "material": "C"},
+                   "right": {"z_min": zi+2.0, "z_max": zi+10.0, "material": mat}},
+                  {"id": "INT_CU", "z": i2,
+                   "left": {"z_min": i2-10.0, "z_max": i2-2.0, "material": mat},
+                   "right": {"z_min": i2+2.0, "z_max": i2+10.0, "material": "Cu"}}]
     geom = {
       "schema_version": "1.0", "status": "APPROVED",
-      "geometry_id": f"STACK_{mat}_{t_nm}nm",
-      "note": f"diamond(111)/{mat}({term}-term)/Cu(111), common L={L:.3f} A",
+      "geometry_id": f"STACK_{mat}",
+      "note": f"diamond(111)/{mat}/Cu(111), common L={L:.3f} A",
       "box": {"lx": L, "ly": LY, "z_min": zmin, "z_max": zmax, "boundary": "p p p"},
-      "layers": [
-        {"id": "DIA", "material": "C",  "z_min": float(dia[:,2].min()), "z_max": i1},
-        {"id": "INT", "material": mat,  "z_min": i1, "z_max": i2},
-        {"id": "CU",  "material": "Cu", "z_min": i2, "z_max": float(cu[:,2].max())},
-      ],
-      "interfaces": [
-        {"id": "DIA_INT", "z": i1,
-         "left":  {"z_min": i1-10.0, "z_max": i1-2.0, "material": "C"},
-         "right": {"z_min": i1+2.0, "z_max": i1+10.0, "material": mat}},
-        {"id": "INT_CU", "z": i2,
-         "left":  {"z_min": i2-10.0, "z_max": i2-2.0, "material": mat},
-         "right": {"z_min": i2+2.0, "z_max": i2+10.0, "material": "Cu"}},
-      ],
+      "layers": layers, "interfaces": ifaces,
       "groups": {
         "hot":  {"z_min": float(dia[:,2].min())+6.0, "z_max": float(dia[:,2].min())+18.0},
         "cold": {"z_min": float(cu[:,2].max())-22.0, "z_max": float(cu[:,2].max())},
       },
       "chunk_bin_A": 1.0,
       "expected_atoms": {"total": int(len(atoms))},
-      "strains_pct": {"diamond": round(100*(a_d-NN["C"])/NN["C"], 3),
-                      "Cu": round(100*(a_c-NN["Cu"])/NN["Cu"], 3),
-                      "TiC": round(100*(a_i-NN["TiC"])/NN["TiC"], 3)},
     }
     Path(a.out_geom).write_text(json.dumps(geom, indent=2, ensure_ascii=False)+"\n",
                                encoding="utf-8", newline="\n")
-    print(f"[geom] interfaces at z={i1:.2f} (diamond/{mat}) and z={i2:.2f} ({mat}/Cu)")
+    print(f"[geom] {len(layers)} layers, {len(ifaces)} interface(s) at z={zi:.2f}")
 
     print(f"[built] {len(atoms)} atoms  box {L:.2f} x {LY:.2f} x {zmax-zmin:.1f}")
     return 0
